@@ -1,16 +1,16 @@
 # Derin öğrenme ödevleri
 
-Derin öğrenme dersinin ödevleri bu depoda duruyor. Her ödevin kodu, sonuçları ve raporu kendi klasöründe. Bütün ödevler kökteki ortak `.venv` Python ortamını kullanır.
+Derin öğrenme dersinin ödevleri bu repoda. Her ödevin kodu, sonuçları ve raporu kendi klasöründe. Ödevlerin hepsi kökteki ortak `.venv` ortamını kullanıyor.
 
 | Ödev | Konu | Klasör |
 | --- | --- | --- |
-| Ödev 1 | MNIST veri setiyle MLP tabanlı el yazısı rakam tanıma | [odev1_mnist_mlp](odev1_mnist_mlp/README.md) |
+| Ödev 1 | MNIST ile MLP tabanlı el yazısı rakam tanıma | [odev1_mnist_mlp](odev1_mnist_mlp/README.md) |
 
 ## Python ortamı
 
-Ortam Python 3.12 ile kuruldu. Paket sürümleri `requirements.txt` içinde sabitlendi. `.venv` klasörü Git'e girmez, her bilgisayarda yeniden kurulur.
+Ortam Python 3.12 ile kuruldu. Paket sürümleri `requirements.txt` içinde sabit. `.venv` Git'e girmiyor, her bilgisayarda yeniden kurulması gerekiyor.
 
-Windows'ta, PowerShell ile proje kökünde:
+Windows'ta, proje kökünde PowerShell ile:
 
 ```powershell
 py -3.12 -m venv .venv
@@ -26,10 +26,10 @@ source .venv/bin/activate
 python -m pip install -r requirements.txt
 ```
 
-Windows'ta PyPI'dan gelen PyTorch yalnızca CPU kullanır. Ödevler CPU'da da çalışır. NVIDIA ekran kartı kullanmak istersen `requirements.txt` kurulumundan önce PyTorch'un CUDA derlemesini kur:
+Windows'ta PyPI'dan gelen PyTorch yalnızca CPU'yu kullanıyor. Ödevler CPU'da da çalışıyor. NVIDIA ekran kartı kullanmak için `requirements.txt` kurulumundan önce PyTorch'un CUDA sürümünün kurulması gerekiyor:
 
 ```powershell
 .\.venv\Scripts\python.exe -m pip install torch==2.14.1 torchvision==0.29.1 --index-url https://download.pytorch.org/whl/cu130
 ```
 
-Ortamı etkinleştirdikten sonra `python` ve `pip` komutları `.venv` içinden çalışır. Etkinleştirmeden `.\.venv\Scripts\python.exe` yolu da doğrudan kullanılabilir. Her ödevin çalıştırma komutları kendi README dosyasında.
+Ortam etkinken `python` ve `pip` komutları `.venv` içinden çalışır. Etkinleştirmeden `.\.venv\Scripts\python.exe` yolu da kullanılabilir. Çalıştırma komutları her ödevin kendi README dosyasında.

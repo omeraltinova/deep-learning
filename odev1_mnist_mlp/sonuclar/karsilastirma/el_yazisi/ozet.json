@@ -1,0 +1,21 @@
+{
+  "rakam_sayisi": 22,
+  "etiketli_rakam": 22,
+  "dogru": 22,
+  "accuracy": 1.0,
+  "ortalama_olasilik": 0.9911,
+  "satirlar": [
+    {
+      "foto": "ogrenci_no_1.jpg",
+      "satir": "1",
+      "gercek": "23120205043",
+      "tahmin": "23120205043"
+    },
+    {
+      "foto": "ogrenci_no_2.jpg",
+      "satir": "1",
+      "gercek": "23120205043",
+      "tahmin": "23120205043"
+    }
+  ]
+}

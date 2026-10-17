@@ -63,6 +63,47 @@ def class_counts(labels):
     return torch.bincount(labels, minlength=10).tolist()
 
 
+def load_train_val(seed, validation_size):
+    """MNIST'in 60 000 görüntülük eğitim kısmını train ve validation olarak ikiye böler.
+
+    Ortalama ve standart sapma yalnızca train kısmından hesaplanır. Resmî test kümesi burada yüklenmez.
+    """
+    images, labels = load_mnist(train=True)
+    perm = torch.randperm(len(labels), generator=torch.Generator().manual_seed(seed))
+    val_idx, train_idx = perm[:validation_size], perm[validation_size:]
+    assert len(set(train_idx.tolist()) & set(val_idx.tolist())) == 0
+    mean = images[train_idx].mean().item()
+    std = images[train_idx].std().item()
+    train_ds = TensorDataset((images[train_idx] - mean) / std, labels[train_idx])
+    val_ds = TensorDataset((images[val_idx] - mean) / std, labels[val_idx])
+    return train_ds, val_ds, mean, std
+
+
+def fit(model, train_ds, val_ds, optimizer, hp, device, log=True):
+    """Modeli eğitir ve her epoch sonunda validation kümesini ölçer.
+
+    Epoch geçmişini ve validation loss'un en düşük olduğu epoch'taki ağırlıkları döndürür.
+    """
+    train_loader = DataLoader(train_ds, batch_size=hp["batch_size"], shuffle=True,
+                              generator=torch.Generator().manual_seed(hp["seed"]))
+    val_loader = DataLoader(val_ds, batch_size=1000)
+    loss_fn = nn.CrossEntropyLoss()
+    history, best_state = [], None
+    for epoch in range(1, hp["epochs"] + 1):
+        epoch_start = time.perf_counter()
+        train_loss, train_acc = run_epoch(model, train_loader, loss_fn, device, optimizer)
+        val_loss, val_acc = run_epoch(model, val_loader, loss_fn, device)
+        epoch_time = time.perf_counter() - epoch_start
+        if best_state is None or val_loss < min(r["val_loss"] for r in history):
+            best_state = {k: v.detach().cpu().clone() for k, v in model.state_dict().items()}
+        history.append({"epoch": epoch, "train_loss": train_loss, "train_acc": train_acc,
+                        "val_loss": val_loss, "val_acc": val_acc, "epoch_time_s": epoch_time})
+        if log:
+            print(f"Epoch {epoch:2d}/{hp['epochs']} | train loss {train_loss:.4f} acc {train_acc:.4f} | "
+                  f"val loss {val_loss:.4f} acc {val_acc:.4f} | {epoch_time:.2f} s")
+    return history, best_state
+
+
 def plot_history(history, path):
     epochs = [row["epoch"] for row in history]
     colors = {"train": "#2a78d6", "val": "#eb6834"}
@@ -88,50 +129,27 @@ def main():
     torch.manual_seed(seed)
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-    # 1) Veri ayrımı: MNIST'in 60 000 görüntülük eğitim kısmı train ve validation olarak ikiye bölünür.
-    #    Resmî 10 000 görüntülük test kümesi eğitim boyunca hiç yüklenmez.
-    images, labels = load_mnist(train=True)
-    perm = torch.randperm(len(labels), generator=torch.Generator().manual_seed(seed))
-    val_idx, train_idx = perm[:HPARAMS["validation_size"]], perm[HPARAMS["validation_size"]:]
-    assert len(set(train_idx.tolist()) & set(val_idx.tolist())) == 0
-
-    # 2) Normalizasyon: ortalama ve standart sapma yalnızca train kısmından hesaplanır.
-    mean = images[train_idx].mean().item()
-    std = images[train_idx].std().item()
-    train_ds = TensorDataset((images[train_idx] - mean) / std, labels[train_idx])
-    val_ds = TensorDataset((images[val_idx] - mean) / std, labels[val_idx])
-    train_loader = DataLoader(train_ds, batch_size=HPARAMS["batch_size"], shuffle=True,
-                              generator=torch.Generator().manual_seed(seed))
-    val_loader = DataLoader(val_ds, batch_size=1000)
+    # 1) Veri ayrımı ve normalizasyon. Resmî 10 000 görüntülük test kümesi eğitim boyunca hiç yüklenmez.
+    train_ds, val_ds, mean, std = load_train_val(seed, HPARAMS["validation_size"])
     print(f"Cihaz: {device}  |  train: {len(train_ds)}  validation: {len(val_ds)}  (test eğitimden sonra)")
     print(f"Normalizasyon: mean={mean:.4f}, std={std:.4f}")
 
-    # 3) Model, kayıp fonksiyonu ve optimizer
+    # 2) Model ve optimizer. Kayıp fonksiyonu CrossEntropyLoss (fit içinde).
     model = MLP(HPARAMS["hidden_sizes"]).to(device)
-    loss_fn = nn.CrossEntropyLoss()
     optimizer = torch.optim.Adam(model.parameters(), lr=HPARAMS["learning_rate"])
     n_params = sum(p.numel() for p in model.parameters())
     print(model)
     print(f"Eğitilebilir parametre: {n_params:,}")
 
-    # 4) Eğitim: her epoch sonunda validation kümesi ölçülür.
-    history = []
+    # 3) Eğitim: her epoch sonunda validation kümesi ölçülür. Deney 1 son epoch'taki modeli kullanır.
     start = time.perf_counter()
-    for epoch in range(1, HPARAMS["epochs"] + 1):
-        epoch_start = time.perf_counter()
-        train_loss, train_acc = run_epoch(model, train_loader, loss_fn, device, optimizer)
-        val_loss, val_acc = run_epoch(model, val_loader, loss_fn, device)
-        epoch_time = time.perf_counter() - epoch_start
-        history.append({"epoch": epoch, "train_loss": train_loss, "train_acc": train_acc,
-                        "val_loss": val_loss, "val_acc": val_acc, "epoch_time_s": epoch_time})
-        print(f"Epoch {epoch:2d}/{HPARAMS['epochs']} | train loss {train_loss:.4f} acc {train_acc:.4f} | "
-              f"val loss {val_loss:.4f} acc {val_acc:.4f} | {epoch_time:.2f} s")
+    history, _ = fit(model, train_ds, val_ds, optimizer, HPARAMS, device)
     training_time = time.perf_counter() - start
 
-    # 5) Test: eğitim bittikten sonra test kümesi ilk ve tek kez kullanılır.
+    # 4) Test: eğitim bittikten sonra test kümesi ilk ve tek kez kullanılır.
     test_images, test_labels = load_mnist(train=False)
     test_loader = DataLoader(TensorDataset((test_images - mean) / std, test_labels), batch_size=1000)
-    test_loss, test_acc = run_epoch(model, test_loader, loss_fn, device)
+    test_loss, test_acc = run_epoch(model, test_loader, nn.CrossEntropyLoss(), device)
     print(f"Test loss {test_loss:.4f}  |  test accuracy {test_acc:.4f}  |  eğitim süresi {training_time:.1f} s")
 
     torch.save({"state_dict": model.state_dict(), "hidden_sizes": HPARAMS["hidden_sizes"],
@@ -148,8 +166,8 @@ def main():
         "trainable_parameters": n_params,
         "normalization": {"mean": mean, "std": std},
         "split": {
-            "train": {"size": len(train_idx), "class_counts": class_counts(labels[train_idx])},
-            "validation": {"size": len(val_idx), "class_counts": class_counts(labels[val_idx])},
+            "train": {"size": len(train_ds), "class_counts": class_counts(train_ds.tensors[1])},
+            "validation": {"size": len(val_ds), "class_counts": class_counts(val_ds.tensors[1])},
             "test": {"size": len(test_labels), "class_counts": class_counts(test_labels)},
         },
         "final_epoch": {k: final[k] for k in ("train_loss", "val_loss", "train_acc", "val_acc")},

@@ -1,0 +1,26 @@
+{
+  "yapilandirma": "SGD lr 0.1",
+  "epoch": 12,
+  "hyperparameters": {
+    "hidden_sizes": [
+      256,
+      128
+    ],
+    "activation": "ReLU",
+    "loss": "CrossEntropyLoss",
+    "optimizer": "SGD",
+    "learning_rate": 0.1,
+    "batch_size": 128,
+    "epochs": 12,
+    "validation_size": 10000,
+    "seed": 42
+  },
+  "validation": {
+    "loss": 0.07152441814541817,
+    "accuracy": 0.9795
+  },
+  "test": {
+    "loss": 0.06743205394595861,
+    "accuracy": 0.9792
+  }
+}

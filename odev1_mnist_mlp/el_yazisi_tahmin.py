@@ -1,4 +1,4 @@
-"""el_yazisi_hazirla.py ile hazırlanan 28 × 28 rakamları Deney 1 modeliyle sınıflandırır."""
+"""el_yazisi_hazirla.py ile hazırlanan 28 × 28 rakamları kayıtlı bir modelle sınıflandırır (varsayılan: Deney 1)."""
 import argparse
 import csv
 import json
@@ -89,7 +89,7 @@ def main():
             if record["etiket"]:
                 title = f"gerçek {record['etiket']}\n" + title
             ax.set_title(title + ("  ✗" if wrong else ""), fontsize=8, color="#c0392b" if wrong else "#0b0b0b")
-    fig.suptitle("Kendi el yazısı rakamlarda Deney 1 modelinin tahminleri", fontsize=10)
+    fig.suptitle(f"Kendi el yazısı rakamlarda tahminler, model: {args.model.name}", fontsize=10)
     fig.savefig(args.cikti / "tahminler.png", dpi=150)
     plt.close(fig)
 

@@ -75,7 +75,7 @@
     "loss": 0.10771066285669803,
     "accuracy": 0.9799
   },
-  "training_time_s": 14.206644999998389,
+  "training_time_s": 13.413825499999803,
   "environment": {
     "device": "NVIDIA GeForce RTX 5080",
     "python": "3.12.10",
