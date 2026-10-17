@@ -1,0 +1,16 @@
+# Python ortamı ve önbellek
+.venv/
+__pycache__/
+*.py[cod]
+
+# MNIST ham verisi; eğitim betiği ilk çalıştırmada yeniden indirir
+odev*/veri/
+
+# Editör ve işletim sistemi dosyaları
+.vscode/
+.idea/
+.ipynb_checkpoints/
+.DS_Store
+Thumbs.db
+Desktop.ini
+*.log

@@ -1,0 +1,85 @@
+{
+  "hyperparameters": {
+    "hidden_sizes": [
+      256,
+      128
+    ],
+    "activation": "ReLU",
+    "loss": "CrossEntropyLoss",
+    "optimizer": "Adam",
+    "learning_rate": 0.001,
+    "batch_size": 128,
+    "epochs": 20,
+    "validation_size": 10000,
+    "seed": 42
+  },
+  "trainable_parameters": 235146,
+  "normalization": {
+    "mean": 0.13059958815574646,
+    "std": 0.3080507218837738
+  },
+  "split": {
+    "train": {
+      "size": 50000,
+      "class_counts": [
+        4930,
+        5668,
+        4942,
+        5089,
+        4860,
+        4507,
+        4923,
+        5254,
+        4846,
+        4981
+      ]
+    },
+    "validation": {
+      "size": 10000,
+      "class_counts": [
+        993,
+        1074,
+        1016,
+        1042,
+        982,
+        914,
+        995,
+        1011,
+        1005,
+        968
+      ]
+    },
+    "test": {
+      "size": 10000,
+      "class_counts": [
+        980,
+        1135,
+        1032,
+        1010,
+        982,
+        892,
+        958,
+        1028,
+        974,
+        1009
+      ]
+    }
+  },
+  "final_epoch": {
+    "train_loss": 0.01153471368767321,
+    "val_loss": 0.10948411524295806,
+    "train_acc": 0.9962,
+    "val_acc": 0.9782
+  },
+  "test": {
+    "loss": 0.10771066285669803,
+    "accuracy": 0.9799
+  },
+  "training_time_s": 14.206644999998389,
+  "environment": {
+    "device": "NVIDIA GeForce RTX 5080",
+    "python": "3.12.10",
+    "torch": "2.14.1+cu130",
+    "os": "Windows-11-10.0.26200-SP0"
+  }
+}
